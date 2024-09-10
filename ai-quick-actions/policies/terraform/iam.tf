@@ -49,7 +49,7 @@ locals {
     "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to manage data-science-modelversionsets in ${local.compartment_policy_string}",
     "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to read buckets in ${local.compartment_policy_string}",
     "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to read objectstorage-namespaces in ${local.compartment_policy_string}",
-    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to inspect compartments in tenancy"
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to inspect compartments in ${local.compartment_policy_string}"
     ]
 
   all_buckets = concat(var.user_model_buckets, var.user_data_buckets)
