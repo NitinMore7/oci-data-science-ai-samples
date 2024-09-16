@@ -27,7 +27,6 @@ locals {
   compartment_policy_string = local.is_compartment_tenancy ? "tenancy" :  "compartment id ${var.compartment_ocid}"
   policy_tenancy = local.is_resource_policy_only? var.compartment_ocid : var.tenancy_ocid
 
-
   tenancy_map = ({
     oc1: "ocid1.tenancy.oc1..aaaaaaaax5hdic7ya6r5rxsgpifff4l6xdxzltnrncdzp3m75ubbvzqqzn3q"
     oc8: "ocid1.tenancy.oc8..aaaaaaaa2nxkxxix6ngdcifswvrezlmuylejvse4x6oa2ub4wfaduyz547wa"
@@ -36,7 +35,24 @@ locals {
   service_tenancy_ocid = lookup(local.tenancy_map, local.user_realm, "UNKNOWN")
 
   // These are encompassing policies that will be created in the tenancy. When the user selects "All policies" these policies will be created.
-  policies_to_use = [
+  aqua_all_policies = local.is_all_policies? [
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to manage data-science-model-deployments in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to manage data-science-models in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to use logging-family in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to manage data-science-jobs in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to manage data-science-job-runs in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to use virtual-network-family in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to read resource-availability in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to manage data-science-projects in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to manage data-science-notebook-sessions in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to manage data-science-modelversionsets in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to read buckets in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to read objectstorage-namespaces in ${local.compartment_policy_string}",
+    "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to inspect compartments in tenancy"
+    ]:[]
+
+  // Aqua resource only policies. These policies will be created in a specific compartment. When the user selects "Only resource policies" these policies will be created.
+  aqua_resource_only_policies = local.is_resource_policy_only? [
     "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to manage data-science-model-deployments in ${local.compartment_policy_string}",
     "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to manage data-science-models in ${local.compartment_policy_string}",
     "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to use logging-family in ${local.compartment_policy_string}",
@@ -50,7 +66,9 @@ locals {
     "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to read buckets in ${local.compartment_policy_string}",
     "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to read objectstorage-namespaces in ${local.compartment_policy_string}",
     "Allow dynamic-group id ${oci_identity_dynamic_group.aqua-dynamic-group[0].id} to inspect compartments in ${local.compartment_policy_string}"
-    ]
+  ]:[]
+
+  policies_to_use = local.is_admin_policies_only ? [] : local.is_resource_policy_only ? local.aqua_resource_only_policies : local.aqua_all_policies
 
   all_buckets = concat(var.user_model_buckets, var.user_data_buckets)
   bucket_names = join(", ", formatlist("target.bucket.name='%s'", local.all_buckets))
